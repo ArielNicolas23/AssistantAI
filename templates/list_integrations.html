@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Integrations List{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mt-5">Integrations</h2>
+        <a href="{{ url_for('integration.new_integration') }}" class="btn btn-success mb-3">New Integration</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Owner ID</th>
+                    <th>Type</th>
+                    <th>Token</th>
+                    <th>Assistant ID</th>
+                    <th>Is Test</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for integration in integrations %}
+                <tr>
+                    <td>{{ integration.OwnerID }}</td>
+                    <td>{{ integration.Type }}</td>
+                    <td>{{ integration.Token }}</td>
+                    <td>{{ integration.AssistantID }}</td>
+                    <td>{{ integration.IsTest }}</td>
+                    <td>
+                        <a href="{{ url_for('integration.update_integration', integration_id=integration.id) }}" class="btn btn-warning">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

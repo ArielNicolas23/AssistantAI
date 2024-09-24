@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Assistants List{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mt-5">Assistants</h2>
+        <a href="{{ url_for('assistant.new_assistant') }}" class="btn btn-success mb-3">New Assistant</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Owner ID</th>
+                    <th>Parameter1</th>
+                    <th>Parameter2</th>
+                    <th>Parameter3</th>
+                    <th>Prompt</th>
+                    <th>Is Test</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assistant in assistants %}
+                <tr>
+                    <td>{{ assistant.Name }}</td>
+                    <td>{{ assistant.OwnerID }}</td>
+                    <td>{{ assistant.Parameter1 }}</td>
+                    <td>{{ assistant.Parameter2 }}</td>
+                    <td>{{ assistant.Parameter3 }}</td>
+                    <td>{{ assistant.Prompt }}</td>
+                    <td>{{ assistant.IsTest }}</td>
+                    <td>
+                        <a href="{{ url_for('assistant.update_assistant', assistant_id=assistant.id) }}" class="btn btn-warning">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Assistant{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mt-5">Update Assistant</h2>
+        <form method="POST" action="{{ url_for('assistant.update_assistant', assistant_id=assistant.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.Name.label(class="form-label") }}
+                {{ form.Name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.Parameter1.label(class="form-label") }}
+                {{ form.Parameter1(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.Parameter2.label(class="form-label") }}
+                {{ form.Parameter2(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.Parameter3.label(class="form-label") }}
+                {{ form.Parameter3(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.Prompt.label(class="form-label") }}
+                {{ form.Prompt(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.IsTest.label(class="form-label") }}
+                {{ form.IsTest() }}
+            </div>
+            <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
