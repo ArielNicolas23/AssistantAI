@@ -23,7 +23,10 @@ class Integration(db.Model):
     IntegrationID = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     OwnerID = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     Type = db.Column(db.String(50), nullable=False)
-    Token = db.Column(db.String(255), nullable=False)
+    MetaUserToken = db.Column(db.String(255), nullable=False)
+    MetaUserID = db.Column(db.String(255), nullable=False)
+    MetaPageID = db.Column(db.String(255), nullable=False)
+    MetaPageName = db.Column(db.String(255), nullable=False)
     AssistantID = db.Column(UUID(as_uuid=True), db.ForeignKey('assistants.AssistantID'), nullable=False)
     IsTest = db.Column(db.Boolean, nullable=False)
 
