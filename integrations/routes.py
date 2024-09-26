@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from project.models import Integration
-from project.integrations.forms import IntegrationForm
+from project.integrations.forms import IntegrationForm,IntegrationUpdateForm
 from project import db, TOKEN, IGTOKEN, IGCLIENTID, METACLIENTID, IGSECRET, METASECRET, ACCESS_TOKEN
 import json
 import hmac
@@ -16,11 +16,14 @@ def new_integration():
     form = IntegrationForm()
     if form.validate_on_submit():
         integration = Integration(
-            OwnerID=form.OwnerID.data,
+            OwnerID=current_user.id,
             Type=form.Type.data,
-            Token=form.Token.data,
-            AssistantID=form.AssistantID.data,
-            IsTest=form.IsTest.data
+            # MetaUserToken = form.MetaUserToken.data,
+            # MetaUserID = form.MetaUserID.data,
+            # MetaPageID = form.MetaPageID.data,
+            # MetaPageName = form.MetaPageName.data,
+            # AssistantID = form.AssistantID.data,
+            IsTest = form.IsTest.data,
         )
         db.session.add(integration)
         db.session.commit()
@@ -28,20 +31,23 @@ def new_integration():
         return redirect(url_for('integration.list_integrations'))
     return render_template('new_integration.html', form=form)
 
-@integration_bp.route('/integration/update/<uuid:integration_id>', methods=['GET', 'POST'])
+@integration_bp.route('/integration/update/<integration_id>', methods=['GET', 'POST'])
 @login_required
 def update_integration(integration_id):
     integration = Integration.query.get_or_404(integration_id)
-    form = IntegrationForm(obj=integration)
+    form = IntegrationUpdateForm(obj=integration)
     if form.validate_on_submit():
-        integration.Type = form.Type.data
-        integration.Token = form.Token.data
+        integration.Type=form.Type.data
+        integration.MetaUserToken = form.MetaUserToken.data
+        integration.MetaUserID = form.MetaUserID.data
+        integration.MetaPageID = form.MetaPageID.data
+        integration.MetaPageName = form.MetaPageName.data
         integration.AssistantID = form.AssistantID.data
         integration.IsTest = form.IsTest.data
         db.session.commit()
         flash('Integration updated successfully!', 'success')
         return redirect(url_for('integration.list_integrations'))
-    return render_template('update_integration.html', form=form)
+    return render_template('update_integration.html', form=form, integration=integration)
 
 @integration_bp.route('/integrations')
 @login_required
@@ -49,13 +55,13 @@ def list_integrations():
     integrations = Integration.query.all()
     return render_template('list_integrations.html', integrations=integrations)
 
-@integration_bp.route("integration/generatetoken/", methods=['GET'])
+@integration_bp.route("/integration/generatetoken/", methods=['GET'])
 def registrarIntegracion():
     args = request.args
     platform = args['state']
     token = generarToken(args['code'], platform)
     
-    return token
+    return args
 
 #Recibe codigo y genera token de acceso
 def generarToken(code, platform):

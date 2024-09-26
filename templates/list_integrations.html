@@ -27,7 +27,7 @@
                     <td>{{ integration.AssistantID }}</td>
                     <td>{{ integration.IsTest }}</td>
                     <td>
-                        <a href="{{ url_for('integration.update_integration', integration_id=integration.id) }}" class="btn btn-warning">Edit</a>
+                        <a href="{{ url_for('integration.update_integration', integration_id=integration.IntegrationID) }}" class="btn btn-warning">Edit</a>
                     </td>
                 </tr>
                 {% endfor %}
