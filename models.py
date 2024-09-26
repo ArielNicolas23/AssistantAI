@@ -20,12 +20,15 @@ class User(db.Model, UserMixin):
 class Integration(db.Model):
     __tablename__ = 'integrations'
 
-    IntegrationID = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    OwnerID = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
+    IntegrationID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    OwnerID = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     Type = db.Column(db.String(50), nullable=False)
-    Token = db.Column(db.String(255), nullable=False)
-    AssistantID = db.Column(UUID(as_uuid=True), db.ForeignKey('assistants.AssistantID'), nullable=False)
-    IsTest = db.Column(db.Boolean, nullable=False)
+    MetaUserToken = db.Column(db.String(255))
+    MetaUserID = db.Column(db.String(255))
+    MetaPageID = db.Column(db.String(255))
+    MetaPageName = db.Column(db.String(255))
+    AssistantID = db.Column(db.Integer, db.ForeignKey('assistants.AssistantID'))
+    IsTest = db.Column(db.Boolean)
 
     def __repr__(self):
         return f'<Integration {self.Type}>'
@@ -34,7 +37,7 @@ class Integration(db.Model):
 class Assistant(db.Model):
     __tablename__ = 'assistants'
 
-    AssistantID = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    AssistantID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Name = db.Column(db.String(120), nullable=False)
     OwnerID = db.Column(UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     Parameter1 = db.Column(db.String(255), nullable=True)

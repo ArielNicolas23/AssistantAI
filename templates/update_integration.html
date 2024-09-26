@@ -6,24 +6,52 @@
 <div class="row justify-content-center">
     <div class="col-md-6">
         <h2 class="mt-5">Update Integration</h2>
-        <form method="POST" action="{{ url_for('integration.update_integration', integration_id=integration.id) }}">
+        <form method="POST" action="{{ url_for('integration.update_integration', integration_id=integration.IntegrationID) }}">
             {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.Type.label(class="form-label") }}
-                {{ form.Type(class="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ form.Token.label(class="form-label") }}
-                {{ form.Token(class="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ form.AssistantID.label(class="form-label") }}
-                {{ form.AssistantID(class="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ form.IsTest.label(class="form-label") }}
-                {{ form.IsTest() }}
-            </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="Type">Type</label>
+                    <input class="form-control" id="Type" name="Type" required="" type="text" value='{{form.Type.data}}'>
+                </div>
+
+                <div class="mb-3">
+                    <a href="https://www.facebook.com/v20.0/dialog/oauth?client_id=393577946782429&redirect_uri=https://kidicai.pythonanywhere.com/LoginTest/&state=Facebook&config_id=547622217684331&response_type=code" class="facebook-btn">
+                        <i class="fab fa-facebook-f"></i> Inicio de Sesión con Facebook
+                    </a>
+                    <a href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&state={platform=Instagram,integration_id="+'{{integration.IntegrationID}}' +"}&force_authentication=1&client_id=443897407962766&redirect_uri=https://kidicai.pythonanywhere.com/&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish" class="instagram-btn">
+                        <i class="fab fa-instagram"></i> Inicio de Sesión con Instagram
+                    </a>
+                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="MetaUserToken">MetaUserToken</label>
+                    <input class="form-control" id="MetaUserToken" name="MetaUserToken" disabled required="" type="text" value='{{form.MetaUserToken.data}}'>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="MetaUserID">MetaUserID</label>
+                    <input class="form-control" id="MetaUserID" name="MetaUserID" disabled required="" type="text" value='{{form.MetaUserID.data}}'>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="MetaPageID">MetaPageID</label>
+                    <input class="form-control" id="MetaPageID" name="MetaPageID" disabled required="" type="text" value='{{form.MetaPageID.data}}'>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="MetaPageName">MetaPageName</label>
+                    <input class="form-control" id="MetaPageName" name="MetaPageName" disabled required="" type="text" value='{{form.MetaPageName.data}}'>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="AssistantID">AssistantID</label>
+                    <input class="form-control" id="AssistantID" name="AssistantID" disabled required="" type="text" value='{{form.AssistantID.data}}'>
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form.IsTest.label(class="form-check-label") }}
+                    {{ form.IsTest() }}
+                </div>
             <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
         </form>
     </div>
