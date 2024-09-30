@@ -8,21 +8,35 @@
         <h2 class="mt-5">Update Integration</h2>
         <form method="POST" action="{{ url_for('integration.update_integration', integration_id=integration.IntegrationID) }}">
             {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                <label class="form-label" for="Type">Type</label>
+                <input class="form-control" id="Type" name="MetaUserToken" disabled required="" type="text" value='{{form.Type.data}}'>
+            </div>
                 
-                <div class="mb-3">
-                    <label class="form-label" for="Type">Type</label>
-                    <input class="form-control" id="Type" name="Type" required="" type="text" value='{{form.Type.data}}'>
-                </div>
-
-                <div class="mb-3">
-                    <a href="https://www.facebook.com/v20.0/dialog/oauth?client_id=393577946782429&redirect_uri=https://kidicai.pythonanywhere.com/LoginTest/&state=Facebook&config_id=547622217684331&response_type=code" class="facebook-btn">
-                        <i class="fab fa-facebook-f"></i> Inicio de Sesión con Facebook
-                    </a>
-                    <a href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&state={platform=Instagram,integration_id="+'{{integration.IntegrationID}}' +"}&force_authentication=1&client_id=443897407962766&redirect_uri=https://kidicai.pythonanywhere.com/&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish" class="instagram-btn">
-                        <i class="fab fa-instagram"></i> Inicio de Sesión con Instagram
-                    </a>
-                 </div>
-
+                    {% if metaAuth.isAuth %}
+                    <div class="mb-3">
+                        <label for="Type">Choose a Page:</label>
+                        <select class="form-control" name="Type" id="TypeDdl">
+                            <option value="">Cargando opciones...</option>
+                        </select>
+                        </div>
+                    {% else %}
+                    {% if form.Type.data == 'instagram' %}
+                    <div class="mb-3">
+                        <a href='https://www.instagram.com/oauth/authorize?enable_fb_login=0&state={"platform":"instagram","integration_id":"{{integration.IntegrationID}}"}&force_authentication=1&client_id=443897407962766&redirect_uri=https://kidicai.pythonanywhere.com/integration/generatetoken/&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish' class="instagram-btn">
+                            <i class="fab fa-instagram"></i> Inicio de Sesión con Instagram
+                        </a>
+                     </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <a href='https://www.facebook.com/v20.0/dialog/oauth?client_id=393577946782429&redirect_uri=https://kidicai.pythonanywhere.com/integration/generatetoken/&state={"platform":"facebook","integration_id":"{{integration.IntegrationID}}"}&config_id=547622217684331&response_type=code' class="facebook-btn">
+                            <i class="fab fa-facebook-f"></i> Inicio de Sesión con Facebook
+                        </a>
+                     </div>
+                    {% endif %}
+                   
+                {% endif %}
                 <div class="mb-3">
                     <label class="form-label" for="MetaUserToken">MetaUserToken</label>
                     <input class="form-control" id="MetaUserToken" name="MetaUserToken" disabled required="" type="text" value='{{form.MetaUserToken.data}}'>
@@ -56,4 +70,78 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Escucha el cambio en el dropdown
+    $('#TypeDdl').change(function() {
+        if( $(this).val() != ""){
+        var selectedValue = "{{ metaAuth.userToken }}";
+        var user = "1234556"
+        if (selectedValue) {
+            // Llamada AJAX
+            $.ajax({
+                url: "{{ url_for('integration.select_platform') }}", // URL de tu API
+                type: 'POST',
+                contentType: "application/json",
+                data:JSON.stringify( { "access_token": selectedValue }), // Parámetro enviado al API
+                success: function(response) {
+                    // Actualiza el textbox con el valor obtenido del API
+                    console.log(response.data);
+                    response.data.forEach(function(item) {
+                        var selectedV = $('#TypeDdl').val();
+                        if(item.id == selectedV){
+                            $('#MetaPageID').val(selectedV);
+                            return false;
+                        }
+                        
+                    });
+                },
+                error: function(response) {
+                    console.log(response.data);
+                    alert('Error al obtener los datos del API');
+                }
+            });
+        } else {
+            // Limpiar el textbox si no se selecciona una opción válida
+            $('#MetaPageID').val('');
+        }
+    }
+});
+    function cargarOpciones() {
+        var selectedValue = '{{metaAuth.userToken}}';
+        $.ajax({
+            url: "{{ url_for('integration.select_platform') }}", // URL de tu API
+            type: 'POST',
+            contentType: "application/json",
+            data:JSON.stringify( { "access_token": selectedValue }), // Parámetro enviado al API
+            success: function(response) {
+                // Limpiamos el select antes de agregar los valores
+                $('#TypeDdl').empty();
+
+                // Verificamos que la respuesta contenga datos
+                if (response.data && response.data.length > 0) {
+                    // Añadimos una opción por defecto
+                    $('#TypeDdl').append('<option value="">Selecciona una opción...</option>');
+
+                    // Recorremos el array de datos y los añadimos al dropdown
+                    response.data.forEach(function(item) {
+                        $('#TypeDdl').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    });
+                } else {
+                    // Si no hay datos, agregamos un mensaje de error
+                    $('#TypeDdl').append('<option value="">No hay opciones disponibles</option>');
+                }
+            },
+            error: function() {
+                // En caso de error con la API, mostramos un mensaje
+                $('#TypeDdl').empty().append('<option value="">Error al cargar opciones</option>');
+            }
+        });
+    }
+
+    // Ejecutar la función cuando el documento esté listo
+    $(document).ready(function() {
+        cargarOpciones();
+    });
+</script>
 {% endblock %}

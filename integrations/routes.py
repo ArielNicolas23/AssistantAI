@@ -36,6 +36,11 @@ def new_integration():
 def update_integration(integration_id):
     integration = Integration.query.get_or_404(integration_id)
     form = IntegrationUpdateForm(obj=integration)
+    metaAuth = {"isAuth":False}
+    if (form.MetaUserToken.data != None):
+        metaAuth = {"isAuth":True, "userToken":form.MetaUserToken.data}
+        print(metaAuth)
+        return render_template('update_integration.html', form=form, integration=integration, metaAuth=metaAuth)
     if form.validate_on_submit():
         integration.Type=form.Type.data
         integration.MetaUserToken = form.MetaUserToken.data
@@ -46,8 +51,9 @@ def update_integration(integration_id):
         integration.IsTest = form.IsTest.data
         db.session.commit()
         flash('Integration updated successfully!', 'success')
+        flash('Integration with messages successfully!', 'success')
         return redirect(url_for('integration.list_integrations'))
-    return render_template('update_integration.html', form=form, integration=integration)
+    return render_template('update_integration.html', form=form, integration=integration, metaAuth=metaAuth)
 
 @integration_bp.route('/integrations')
 @login_required
@@ -58,67 +64,96 @@ def list_integrations():
 @integration_bp.route("/integration/generatetoken/", methods=['GET'])
 def registrarIntegracion():
     args = request.args
-    platform = args['state']
+    platform = json.loads(args['state'])
     token = generarToken(args['code'], platform)
-    
-    return args
+    userToken = testToken(token['access_token'], platform)
+    if platform['platform']== 'facebook':
+        test = getPages(token['access_token'], userToken['user_id'])
+        print(test)
+        return test
+    #addMessages = addMessageAccess(token['access_token'], userToken['user_id'], platform)
+    MetaUserToken = token['access_token']
+    MetaUserID = userToken['user_id']
+    MetaPageID = userToken['user_id']
+    MetaPageName = userToken['name']
+    return redirect(url_for('integration.select_platform', integration_id=platform['integration_id']))
+
+@integration_bp.route('/integration/select_platform/', methods=['POST'])
+def select_platform():
+    args = request.get_json()
+    test = getPages(args['access_token'])
+    return test
+
+    #if addMessages['success']==True:
+    #    integration = Integration.query.get_or_404(platform['integration_id'])
+    #    integration.MetaUserToken = token['access_token']
+    #    integration.MetaUserID = userToken['user_id']
+    #    integration.MetaPageID = userToken['user_id']
+    #    integration.MetaPageName = userToken['name']
+    #    db.session.commit()
+    #    flash('Integration updated successfully!', 'success')
+    #    return redirect(url_for('integration.update_integration', integration_id=platform['integration_id']))
 
 #Recibe codigo y genera token de acceso
 def generarToken(code, platform):
-    if platform == 'instagram':
+    r=''
+    if platform['platform'] == 'instagram':
         params = {
         'client_id': IGCLIENTID,
         'client_secret': IGSECRET,
         'grant_type': 'authorization_code',
-        'redirect_uri': 'https://kidicai.pythonanywhere.com/',
+        'redirect_uri': 'https://kidicai.pythonanywhere.com/integration/generatetoken/',
         'code': code
         }
         headers = {'content-type': 'application/x-www-form-urlencoded'}
         url = 'https://api.instagram.com/oauth/access_token'
-    elif platform == 'messenger':
+        r = requests.post(url, data=params, headers=headers)
+    elif platform['platform'] == 'facebook':
         params = {
             'client_id': METACLIENTID,
-            'redirect_uri':'https://kidicai.pythonanywhere.com/LoginTest/',
+            'redirect_uri':'https://kidicai.pythonanywhere.com/integration/generatetoken/',
             'client_secret': METASECRET,
             'code':code
             }
-        headers = {}
         url = 'https://graph.facebook.com/oauth/access_token?'
-    r = requests.post(url, data=params, headers=headers)
-    print(r)
+        r = requests.get(url, params=params)
     rJson=r.json()
-    if 'error' in rJson:
-        return rJson
-    return (rJson['access_token'])
-
-#Debuggear Token
-def debugToken(token, accesscode, platform):
-    if platform == 'Instagram':
-        params = {
-        'input_token': token,
-        'access_token':accesscode,
-        }
-        url = 'graph.facebook.com/debug_token?'
-    elif platform == 'Facebook':
-        params = {
-        'fields': 'user_id,username',
-        'access_token':accesscode,
-        }
-        url = 'https://graph.instagram.com/v20.0/me?'
-    r = requests.post(url, data=params)
-    print(r)
-    rJson=r.json()
+    print (rJson)
     if 'error' in rJson:
         return rJson
     return rJson
 
+#Debuggear Token
+def testToken(token, platform):
+    if platform['platform'] == 'instagram':
+        params = {
+        'fields': 'user_id, name',
+        'access_token': token,
+        }
+        url = 'https://graph.instagram.com/v20.0/me'
+    elif platform['platform'] == 'facebook':
+        params = {
+        'input_token': token,
+        'access_token':ACCESS_TOKEN,
+        }
+        url = 'https://graph.facebook.com/debug_token'
+    r = requests.get(url, params=params)
+    print(r)
+    rJson=r.json()
+    if 'error' in rJson:
+        return rJson
+    if platform['platform'] == 'facebook':
+        rJson = rJson['data']
+    return rJson
+
+
 #Obtiene listado de paginas y sus tokens si es que tiene acceso
-def getPages(token, user_id):
-    params2={
+def getPages(token):
+    params={
         'access_token':token
             }
-    url = 'https://graph.facebook.com/'+user_id+'/accounts?'
-    r = requests.get(url, params=params2)
+    url = 'https://graph.facebook.com/me/accounts?'
+    r = requests.get(url, params=params)
     rJson=r.json()
     if 'error' in rJson:
         return rJson
@@ -143,13 +178,13 @@ def callSendAPI(senderPsid, response, page_id, type):
 #registra el servicio de mensajeria
 def addMessageAccess(token, pageid, platform):
     print(token)
-    if platform =='instagram':
+    if platform['platform'] =='facebook':
         params = {
             'subscribed_fields':'messages',
             'access_token':token,
         }
         url = 'https://graph.facebook.com/'+pageid+'/subscribed_apps?'
-    elif platform == 'messenger':
+    elif platform['platform'] == 'instagram':
         params = {
             'subscribed_fields':'messages',
             'access_token':token,

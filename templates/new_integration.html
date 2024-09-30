@@ -9,12 +9,17 @@
             <h2 class="mb-4">New Integration</h2>
             <form method="POST" action="{{ url_for('integration.new_integration') }}">
                 {{ form.hidden_tag() }}
-                
-                <div class="mb-3">
-                    {{ form.Type.label(class="form-label") }}
-                    {{ form.Type(class="form-control") }}
-                </div>
 
+                <div class="mb-3">
+
+
+                <label for="Type">Choose a platform:</label>
+
+                <select class="form-control" name="Type" id="Type">
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                </select>
+                </div>
                 <div class="form-check mb-3">
                     {{ form.IsTest.label(class="form-check-label") }}
                     {{ form.IsTest() }}
